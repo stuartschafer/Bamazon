@@ -1,14 +1,7 @@
 var mysql = require("mysql");
 var prompt = require('prompt');
 var Table = require('easy-table');
-
-function BamazonItem(id, product_name, department_name, price, stock_quantity) {
-	this.id = id;
-	this.product_name = product_name;
-    this.department_name = department_name;
-    this.price = price;
-    this.stock_quantity = stock_quantity
-}
+var BamazonItem = require("./bamazon_contructor.js");
 
 var connection = mysql.createConnection({
     host     : 'localhost',
