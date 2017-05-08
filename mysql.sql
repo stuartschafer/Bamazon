@@ -1,3 +1,5 @@
+-- This seeds everything to start over so I won't have to re-write everything
+
 CREATE DATABASE Bamazon;
 
 USE Bamazon;
@@ -48,13 +50,3 @@ INSERT INTO products (product_name, department_name, price, stock_quantity)
 	VALUES ("Pruckle", "Thingamabobs", 82.15, 3);
 
 SELECT * FROM products;
-
-
--- // U - Update
--- UPDATE products
--- 	SET stock_quantity = 25
---     WHERE id = 1;
-
--- // D - Delete
--- DELETE FROM favorite_foods
--- 	WHERE food = “Pizza";
