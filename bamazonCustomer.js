@@ -87,6 +87,7 @@ function buySomething() {
             var totalStock = res[result.id_Number - 1].stock_quantity;
             var itemtoBuy = res[result.id_Number - 1].product_name;
             var price = res[result.id_Number - 1].price;
+            var previousSales = res[result.id_Number - 1].product_sales;
 
             // This runs if the user entered more than what is in stock
             if (result.units_to_Buy > totalStock) {
@@ -120,8 +121,9 @@ function buySomething() {
             function buyStock() {
                 var stockRemaining = totalStock - buyingStock;
                 var totalCost = buyingStock * price;
+                var updatedSales = previousSales + totalCost;
                 // This writes to the database and changes the stock according to how many the user bought
-                connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: stockRemaining}, {id: result.id_Number}], function (err, res) {
+                connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: stockRemaining, product_sales: updatedSales}, {id: result.id_Number}], function (err, res) {
                     if (err) throw err;
                     console.log(colors.yellow("\nCongrats! You just bought " + buyingStock + " " + itemtoBuy));
                     console.log("Total amount due is $" + totalCost.toFixed(2));

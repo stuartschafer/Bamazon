@@ -10,6 +10,7 @@ CREATE TABLE products (
     department_name VARCHAR(100) NOT NULL,
     price DECIMAL(10, 2),
 	stock_quantity INTEGER(10),
+	product_sales DECIMAL(10, 2),
 	PRIMARY KEY (id)
 );
 
@@ -50,3 +51,15 @@ INSERT INTO products (product_name, department_name, price, stock_quantity)
 	VALUES ("Pruckle", "Thingamabobs", 82.15, 3);
 
 SELECT * FROM products;
+
+
+-- For Challenge 3
+CREATE TABLE departments (
+	department_id INTEGER(11) AUTO_INCREMENT NOT NULL,
+	department_name VARCHAR(100) NOT NULL,
+    over_head_costs VARCHAR(100) NOT NULL,
+    total_sales DECIMAL(10, 2),
+	PRIMARY KEY (department_id)
+);
+
+SELECT * FROM departments;

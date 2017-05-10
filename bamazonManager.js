@@ -5,8 +5,6 @@ var prompt = require('prompt');
 var colors = require("colors/safe");
 var showInv = "";
 
-prompt.colors = false;
-
 // To initialize the connection with the database
 var connection = mysql.createConnection({
     host     : 'localhost',
@@ -36,10 +34,6 @@ var addNew = {
     properties: {
         product_name: {
             description: colors.green('Please enter the PRODUCT NAME'),
-            required: true
-        },
-        department_name: {
-            description: colors.green('Please enter the DEPARTMENT NAME'),
             required: true
         },
         price: {
@@ -263,28 +257,49 @@ function changeSomething() {
 
 function addNewProduct() {
     var inserted = "";
+    var departmentArray = [];
     // This selects all items from the database (so it can verify information when the manager enters info)
     connection.query("SELECT * FROM products", function(err, res) {
-        prompt.start();
-        prompt.get(addNew, function (err, result) {
-            // If the manager enters a quantity > 0 to put in stock, but @ 0 cost, it won't allow them to enter it.
-            // They can enter 0 for price if there is 0 stock.  This would be if they are unsure what the cost is at the time.
-            // If this check wasn't here, the manager could put items for sale at 0 cost that the customer would see. That would get them fired!
-            if (parseFloat(result.price) <= 0 && parseInt(result.stock) > 0) {
-                console.log(colors.bgYellow.red("We're here to make money, not give it away.  The price has to be at least 0.01.\n"));
-                addNewProduct();
-                return null;
-            } else {
-                // This writes a new line to the database with the info the manager ewntered
-                connection.query("INSERT INTO products SET ?", [{product_name: result.product_name, department_name: result.department_name, price: result.price, stock_quantity: result.stock}], function (err, res) {
-                    if (err) throw err;
-                });
+        
+        for (var i = 0; i < res.length; i++) {
+            if (departmentArray.indexOf(res[i].department_name) === -1) {
+                departmentArray.push(res[i].department_name);
             }
-                console.log(colors.yellow("*************************"));
-                console.log("You just added:\nItem Name: " + result.product_name + "\nDepartment Name: " + result.department_name + "\nPrice: $" + result.price + "\nStock: " + result.stock);
-                console.log(colors.yellow("*************************\n"));
-                startingMenu();
-                return null;
+        }
+        inquirer.prompt([
+            {
+                type: "list",
+                message: colors.bgWhite.magenta("Please select which division this will go into."),
+                choices: departmentArray,
+                name: "choices"
+            }
+        ]).then(function(answers) {
+            deptName = answers.choices;
+            addRestofInfo();
         });
-    });   
+
+        function addRestofInfo() {
+            prompt.start();
+            prompt.get(addNew, function (err, result) {
+                // If the manager enters a quantity > 0 to put in stock, but @ 0 cost, it won't allow them to enter it.
+                // They can enter 0 for price if there is 0 stock.  This would be if they are unsure what the cost is at the time.
+                // If this check wasn't here, the manager could put items for sale at 0 cost that the customer would see. That would get them fired!
+                if (parseFloat(result.price) <= 0 && parseInt(result.stock) > 0) {
+                    console.log(colors.bgYellow.red("We're here to make money, not give it away.  The price has to be at least 0.01.\n"));
+                    addNewProduct();
+                    return null;
+                } else {
+                    // This writes a new line to the database with the info the manager ewntered
+                    connection.query("INSERT INTO products SET ?", [{product_name: result.product_name, department_name: deptName, price: result.price, stock_quantity: result.stock}], function (err, res) {
+                        if (err) throw err;
+                    });
+                }
+                    console.log(colors.yellow("*************************"));
+                    console.log("You just added:\nItem Name: " + result.product_name + "\nDepartment Name: " + result.department_name + "\nPrice: $" + result.price + "\nStock: " + result.stock);
+                    console.log(colors.yellow("*************************\n"));
+                    startingMenu();
+                    return null;
+            });
+        }
+    });     
 }
