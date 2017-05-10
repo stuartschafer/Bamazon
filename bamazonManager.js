@@ -288,7 +288,7 @@ function addNewProduct() {
                     });
                 }
                     console.log(colors.yellow("*************************"));
-                    console.log("You just added:\nItem Name: " + result.product_name + "\nDepartment Name: " + result.department_name + "\nPrice: $" + result.price + "\nStock: " + result.stock);
+                    console.log("You just added:\nItem Name: " + result.product_name + "\nDepartment Name: " + deptName + "\nPrice: $" + result.price + "\nStock: " + result.stock);
                     console.log(colors.yellow("*************************\n"));
                     startingMenu();
                     return null;
