@@ -50,14 +50,14 @@ var addNew = {
 };
 
 // This is used to change a product name, department name, price, or stock
-var change_name = {
+var change = {
     properties: {
         id_number: {
             attern: /^[0-9]+$/i,
             description: colors.green("Please enter the id Number (enter 0 to go back to the previous menu)"),
             required: true
         },
-        new_name: {
+        new_property: {
             description: colors.green("Please enter the new Name/Value"),
             required: true
         }
@@ -107,21 +107,24 @@ function startingMenu() {
 
 // This will show the items for sale or low inventory depending on what the manager selects
 function viewInventory() {
-    var stock = 9999999999999999999999;
+    var stock = 99999999999;
+    var t = new Table;
     
     // This selects all items in the database
     if (showInv === "all") {
-        console.log(colors.bgWhite.magenta("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n--------------- EVEY ITEM LISTED ON BAMAZON ---------------\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n"));
+        console.log(colors.bgWhite.magenta("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"));
+        console.log(colors.bgWhite.magenta("--------------- EVEY ITEM LISTED ON BAMAZON ----------------"));
+        console.log(colors.bgWhite.magenta("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"));
     } else {
-        console.log(colors.bgRed.white("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nLOW INVENTORY (Stock that is 5 or less) Need to order more.\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n"));
+        console.log(colors.bgRed.white("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"));
+        console.log(colors.bgRed.white("LOW INVENTORY (Stock that is 5 or less) Need to order more. "));
+        console.log(colors.bgRed.white("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"));
     // This selects all items for the database that the stock_quantity is 5 or less
         stock = 5;
     }
-        // This reads data from the database and will show stock depending on what the manager chooses
+        // This reads data from the products table in the database and will show stock depending on what the manager chooses
         connection.query("SELECT * FROM products WHERE stock_quantity <= ?", [stock], function(err, res) {
         if (err) throw err;
-
-        var t = new Table
 
         res.forEach(function(product) {
             t.cell('Product Id', product.id)
@@ -140,6 +143,7 @@ function viewInventory() {
 function changeSomething() {
     console.log();
     var whatToChange = "";
+    // This selects info from the products table in the database so the manager can change something
     connection.query("SELECT * FROM products", function(err, res) {
          inquirer.prompt([
         {
@@ -157,8 +161,9 @@ function changeSomething() {
                 whatToChange = "product_name";
                 break;
             case "Change the Department Name":
-                whatToChange = "department_name"
-                break;
+                whatToChange = "department_name";
+                changeDeptname();
+                return null;
             case "Add / Remove Inventory":
                 whatToChange = "stock_quantity";
                 console.log(colors.yellow("***** To INCREASE stock enter a number, to DECREASE stock enter a negative number *****"));
@@ -172,7 +177,7 @@ function changeSomething() {
 
         function makeaChange() {
             prompt.start();
-            prompt.get(change_name, function (err, result) {
+            prompt.get(change, function (err, result) {
                 // This is here so the manager can type 0 to go back a menu
                 if (result.id_number === "0") {
                     changeSomething();
@@ -184,28 +189,18 @@ function changeSomething() {
                     return null;
                 }
                 if (whatToChange === "product_name") {
-                    // This updates the database with the new product name
-                    connection.query("UPDATE products SET ? WHERE ?", [{product_name: result.new_name}, {id: result.id_number}], function (err, res) {
+                    // This updates the products table in the database with the new product name
+                    connection.query("UPDATE products SET ? WHERE ?", [{product_name: result.new_property}, {id: result.id_number}], function (err, res) {
                         if (err) throw err;
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                        console.log("New Product Name is " + result.new_name);
-                        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-                        startingMenu();
-                        return null;
-                    });
-                } else if (whatToChange === "department_name") {
-                    // This updates the database with the new department name
-                    connection.query("UPDATE products SET ? WHERE ?", [{department_name: result.new_name}, {id: result.id_number}], function (err, res) {
-                        if (err) throw err;
-                        console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                        console.log("New Department Name is " + result.new_name);
+                        console.log("New Product Name is " + result.new_property);
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                         startingMenu();
                         return null;
                     });
                 } else if (whatToChange === "stock_quantity") {
                     // This makes sure the manager entered a valid number for the stock
-                    if (isNaN(result.new_name) === true) {
+                    if (isNaN(result.new_property) === true) {
                         console.log(colors.bgWhite.red("That isn't a valid number, please try again.\n"));
                         makeaChange();
                         return null;
@@ -216,35 +211,35 @@ function changeSomething() {
                         makeaChange();
                         return null;
                     // This makes sure the manager doesn't take out more than what there is in stock.  You can have 0, but not negative.
-                    } else if (parseInt(result.new_name) + res[(result.id_number - 1)].stock_quantity < 0) {
+                    } else if (parseInt(result.new_property) + res[(result.id_number - 1)].stock_quantity < 0) {
                         console.log(colors.bgWhite.red("Sorry, that would make this negative stock. There are only " + res[(result.id_number - 1)].stock_quantity + " in stock."));
                         makeaChange();
                         return null;
                     }
 
-                    result.new_name = parseInt(result.new_name) + res[(result.id_number - 1)].stock_quantity;
+                    result.new_property = parseInt(result.new_property) + res[(result.id_number - 1)].stock_quantity;
 
-                    // This updates the database with the new stock quantity
-                    connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: result.new_name}, {id: result.id_number}], function (err, res) {
+                    // This updates the products table in the database with the new stock quantity
+                    connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: result.new_property}, {id: result.id_number}], function (err, res) {
                         if (err) throw err;
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                        console.log("New stock is " + result.new_name);
+                        console.log("New stock is " + result.new_property);
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                         startingMenu();
                         return null;
                     });
                 } else if (whatToChange === "price") {
-                    // This checks to make sure the new price (new_name is the price) is greater than 0 and that the price entered is a valid number
-                    if (result.new_name <= 0 || isNaN(result.new_name) === true) {
+                    // This checks to make sure the new price is greater than 0 and that the price entered is a valid number
+                    if (result.new_property <= 0 || isNaN(result.new_property) === true) {
                         console.log(colors.bgWhite.red("That isn't a valid number, please try again. It must be greater than 0."));
                         makeaChange();
                         return null;
                     }
-                    // This updates the database with the new price (new_name is the price)
-                    connection.query("UPDATE products SET ? WHERE ?", [{price: result.new_name}, {id: result.id_number}], function (err, res) {
+                    // This updates the products table in the database with the new price
+                    connection.query("UPDATE products SET ? WHERE ?", [{price: result.new_property}, {id: result.id_number}], function (err, res) {
                         if (err) throw err;
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                        console.log("New Price is $" + parseFloat((result.new_name)).toFixed(2));
+                        console.log("New Price is $" + parseFloat((result.new_property)).toFixed(2));
                         console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
                         startingMenu();
                         return null;
@@ -258,18 +253,16 @@ function changeSomething() {
 function addNewProduct() {
     var inserted = "";
     var departmentArray = [];
-    // This selects all items from the database (so it can verify information when the manager enters info)
-    connection.query("SELECT * FROM products", function(err, res) {
-        
-        for (var i = 0; i < res.length; i++) {
-            if (departmentArray.indexOf(res[i].department_name) === -1) {
-                departmentArray.push(res[i].department_name);
+    // This selects all items from the departments table in the database (so it can verify information when the manager enters info)
+    connection.query("SELECT department_name FROM departments", function(err, departments) {
+        // This creates an array of department names so the manager can choose 1 from it
+        for (var i = 0; i < departments.length; i++) {
+                departmentArray.push(departments[i].department_name);
             }
-        }
         inquirer.prompt([
             {
                 type: "list",
-                message: colors.bgWhite.magenta("Please select which division this will go into."),
+                message: colors.bgWhite.black("Please select which DEPARTMENT this will go into. (If not listed here, please speak to your supervisor"),
                 choices: departmentArray,
                 name: "choices"
             }
@@ -289,7 +282,7 @@ function addNewProduct() {
                     addNewProduct();
                     return null;
                 } else {
-                    // This writes a new line to the database with the info the manager ewntered
+                    // This writes a new line to the products table in the database with the info the manager ewntered
                     connection.query("INSERT INTO products SET ?", [{product_name: result.product_name, department_name: deptName, price: result.price, stock_quantity: result.stock}], function (err, res) {
                         if (err) throw err;
                     });
@@ -302,4 +295,43 @@ function addNewProduct() {
             });
         }
     });     
+}
+
+
+
+
+
+
+function changeDeptname() {
+    var departmentArray = [];
+
+    // This prompts the manager for the id of the product he wishes to change
+    prompt.get({ properties: { id_value: { pattern: /^[0-9]+$/i, message: 'Please enter only numbers', required: true }}} , function (err, result) {
+        
+        // This selects all items from the departments table in the database (so it can verify information when the manager enters info)
+        connection.query("SELECT department_name FROM departments", function(err, departments) {
+            // This creates an array of department names so the manager can choose 1 from it
+            for (var i = 0; i < departments.length; i++) {
+                departmentArray.push(departments[i].department_name);
+            }
+            inquirer.prompt([
+                {   type: "list",
+                    message: colors.bgWhite.black("Please select which DEPARTMENT this will go into. (If not listed here, please speak to your supervisor"),
+                    choices: departmentArray,
+                    name: "choices"
+                }
+            ]).then(function(answers) {
+
+                // This updates the products table in the database with the new department name
+                connection.query("UPDATE products SET department_name = ? WHERE id = ?", [answers.choices, result.id_value], function (err, res) {
+                    if (err) throw err;
+                    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    console.log("New Department Name is " + answers.choices);
+                    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+                    startingMenu();
+                    return null;
+                });
+            });
+        });
+    });
 }

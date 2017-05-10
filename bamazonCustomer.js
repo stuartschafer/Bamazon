@@ -47,12 +47,11 @@ connection.connect();
 showTable();
 
 function showTable() {
+    var t = new Table
     console.log(colors.bgWhite.magenta("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n=-= BAMAZON, for when you want to be better than Amazon =-=\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n"));
     // This will show all items available for sale that have at least 1 in stock
     connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, res) {
 		if (err) throw err;
-
-        var t = new Table
         
         // This displays the table of all the items for sale
         res.forEach(function(product) {
@@ -68,8 +67,9 @@ function showTable() {
     });
 }
 
-// This runs after the table of items are shown, and asks the user to purchase something
+// This runs after the items for sale are shown, and asks the user to purchase something
 function buySomething() {
+    // This gets the info from the products table in the database
     connection.query("SELECT * FROM products", function(err, res) {
     console.log(colors.blue("\nEnter 0 for either choice to buy nothing and exit.\n"));
     prompt.start();
@@ -88,6 +88,7 @@ function buySomething() {
             var itemtoBuy = res[result.id_Number - 1].product_name;
             var price = res[result.id_Number - 1].price;
             var previousSales = res[result.id_Number - 1].product_sales;
+            var deptName = res[result.id_Number - 1].department_name;
 
             // This runs if the user entered more than what is in stock
             if (result.units_to_Buy > totalStock) {
@@ -103,33 +104,46 @@ function buySomething() {
             function lowStock() {
                 console.log(colors.bgYellow.red("\nSorry, we do not have enough stock of that item, would you like to buy all " + totalStock + "\nType Y/y for YES, or N/n for NO\n"));
                 prompt.get(yesorno, function (err, result) {
-                    if (result.All === "Y" || result.All === "y") {
+                    if ((result.All).toLowerCase() === "y") {
                         buyingStock = totalStock;
                         buyStock();
                         return null;
-                    } else if (result.All === "N" || result.All === "n") {
+                    } else if ((result.All).toLowerCase() === "n") {
                         buySomething();
                         return null;
                     } else {
-                        console.log("Please enter Y or N");
+                        console.log("Please enter Y/y or N/n");
                         lowStock();
                         return null;
                     }
                 });
             }
-            // This runs when the user has made a purchase.  It will give a review of their purchase and tally up a total.
+            // This runs when the user has made a purchase.
             function buyStock() {
                 var stockRemaining = totalStock - buyingStock;
                 var totalCost = buyingStock * price;
                 var updatedSales = previousSales + totalCost;
-                // This writes to the database and changes the stock according to how many the user bought
+
+                // This gets info from the departments table in the database.
+                // It is used to add to the product_sales column
+                connection.query("SELECT * FROM departments WHERE department_name = ?", deptName, function(err, deptProdSales) {
+                    if (err) throw err;
+                    var previousDeptSales = deptProdSales[0].product_sales;
+                    var newDeptSales = previousDeptSales + totalCost;
+                
+                    // This writes to the departments table in the database and updates the product_sales
+                    connection.query("UPDATE departments SET product_sales = ? WHERE ?", [newDeptSales, {department_name: deptName}], function (err, res) {
+                        if (err) throw err;
+                    });
+                });
+                // This writes to the products table in the database and changes the stock according to how many the user bought
                 connection.query("UPDATE products SET ? WHERE ?", [{stock_quantity: stockRemaining, product_sales: updatedSales}, {id: result.id_Number}], function (err, res) {
                     if (err) throw err;
                     console.log(colors.yellow("\nCongrats! You just bought " + buyingStock + " " + itemtoBuy));
                     console.log("Total amount due is $" + totalCost.toFixed(2));
                     endProgram();
                     return null;
-                    });   
+                });   
             }
             endProgram();
             return null;

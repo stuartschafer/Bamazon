@@ -54,12 +54,23 @@ SELECT * FROM products;
 
 
 -- For Challenge 3
+USE Bamazon;
+
 CREATE TABLE departments (
 	department_id INTEGER(11) AUTO_INCREMENT NOT NULL,
 	department_name VARCHAR(100) NOT NULL,
-    over_head_costs VARCHAR(100) NOT NULL,
-    total_sales DECIMAL(10, 2),
+    over_head_costs DECIMAL(10, 2),
+    product_sales DECIMAL(10, 2),
 	PRIMARY KEY (department_id)
 );
+
+INSERT INTO departments (department_name, over_head_costs, product_sales)
+	VALUES ("Gizmos", 700, 0);
+
+INSERT INTO departments (department_name, over_head_costs, product_sales)
+	VALUES ("Dohickeys", 1000, 0);
+
+INSERT INTO departments (department_name, over_head_costs, product_sales)
+	VALUES ("Thingamabobs", 800, 0);
 
 SELECT * FROM departments;
