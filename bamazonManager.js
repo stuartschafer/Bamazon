@@ -105,25 +105,25 @@ function startingMenu() {
     });
 }
 
-// This will show the items for sale or low inventory depending on what the manager selects
+// This will show every item or low inventory depending on what the manager selects
 function viewInventory() {
-    var stock = 99999999999;
+    var query = "SELECT * FROM products";
+    
     var t = new Table;
     
-    // This selects all items in the database
-    if (showInv === "all") {
-        console.log(colors.bgWhite.magenta("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"));
-        console.log(colors.bgWhite.magenta("--------------- EVEY ITEM LISTED ON BAMAZON ----------------"));
-        console.log(colors.bgWhite.magenta("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"));
-    } else {
+    // This selects items in the database that have 5 or less in stock
+    if (showInv === "low") {
+        query += " WHERE stock_quantity <= 5";
         console.log(colors.bgRed.white("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"));
         console.log(colors.bgRed.white("LOW INVENTORY (Stock that is 5 or less) Need to order more. "));
         console.log(colors.bgRed.white("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"));
-    // This selects all items for the database that the stock_quantity is 5 or less
-        stock = 5;
+    } else {
+        console.log(colors.bgWhite.magenta("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"));
+        console.log(colors.bgWhite.magenta("--------------- EVEY ITEM LISTED ON BAMAZON ----------------"));
+        console.log(colors.bgWhite.magenta("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"));
     }
         // This reads data from the products table in the database and will show stock depending on what the manager chooses
-        connection.query("SELECT * FROM products WHERE stock_quantity <= ?", [stock], function(err, res) {
+        connection.query(query, function(err, res) {
         if (err) throw err;
 
         res.forEach(function(product) {
