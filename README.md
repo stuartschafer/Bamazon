@@ -7,13 +7,16 @@ Use node bamazonSupervisor.js (in terminal/bash) to view Product Sales by Depart
 All information is saved into a MySQL database.
 
 Customer gif demo:
-![](customer_demo.gif)
+
+![](demos/customer_demo.gif)
 
 Manager gif demo:
-![](manager_demo.gif)
+
+![](demos/manager_demo.gif)
 
 Supervisor gif demo:
-![](supervisor_demo.gif)
+
+![](demos/supervisor_demo.gif)
 
 Video Demo:
 https://drive.google.com/open?id=0B99Fu0owdBT7YU5XSXVTNF9FRjQ
