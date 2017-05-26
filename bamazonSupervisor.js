@@ -4,7 +4,7 @@ var Table = require('easy-table');
 var prompt = require('prompt');
 var colors = require("colors/safe");
 
-To initialize the connection with the database
+// To initialize the connection with the database
 var connection = mysql.createConnection({
     host     : 'localhost',
     user     : 'root',
